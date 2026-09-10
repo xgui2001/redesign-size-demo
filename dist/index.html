@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Capture furniture dimensions, measure a photo with a known reference, and check its footprint.">
+  <title>Redesign · Furniture capture</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='5' width='22' height='22' fill='none' stroke='%232b5cd7' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><div><strong class="brand">redesign<span> / </span></strong><span>Furniture capture</span></div><span class="tag">Local processing · prototype</span></header>
+<main>
+  <section class="intro"><div><h1>Get the dimensions right.</h1><p>Import a scan, measure a photo, or enter dimensions you know.</p></div><button id="export" class="secondary">Export JSON <span aria-hidden="true">↗</span></button></section>
+  <div class="workspace">
+    <aside class="inventory"><div class="section-label">FURNITURE <span id="count"></span></div><div id="items"></div><button id="add" class="text-button">+ Add furniture</button><div class="import-area"><label for="scan-file" class="button secondary">Import RoomPlan JSON</label><input id="scan-file" type="file" accept=".json,application/json" hidden><p>Also accepts a JSON export from this demo. All dimensions are shown in cm.</p><button id="example" class="text-button">Load example desk</button></div></aside>
+    <section class="editor">
+      <div class="object-heading"><div><label class="sr-only" for="name">Furniture name</label><input id="name" class="name" maxlength="100"><div id="object-source" class="small"></div></div><button id="remove" class="text-button">Remove</button></div>
+      <div role="tablist" aria-label="Capture tools" class="tabs"><button role="tab" id="photo-tab" aria-controls="photo-panel" aria-selected="true">Photo ruler</button><button role="tab" id="fit-tab" aria-controls="fit-panel" aria-selected="false" tabindex="-1">Footprint & fit</button></div>
+      <section id="photo-panel" role="tabpanel" aria-labelledby="photo-tab">
+        <div class="photo-toolbar"><label for="photo-file" class="button secondary">Choose photo</label><input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic" hidden><label for="camera-file" class="button secondary">Take photo</label><input id="camera-file" type="file" accept="image/*" capture="environment" hidden><button id="clear-photo" class="text-button" hidden>Clear</button></div>
+        <div class="photo-stage" id="photo-stage"><div id="photo-empty"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><rect x="5" y="10" width="34" height="27" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="23" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M13 10l3-5h12l3 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><h2>Start with a straight-on photo.</h2><p>Include a reference of known length on the same flat surface as the dimension you want to measure.</p><p class="small">Photos stay in this browser session.</p></div><svg id="photo-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Photo measurement surface" hidden><image id="photo-image" x="0" y="0"/><g id="photo-lines"></g></svg></div>
+        <div class="ruler-controls"><div><label for="reference">Reference length <span>cm</span></label><input type="number" id="reference" min="0.1" max="10000" step="0.1" value="30"></div><div><label for="axis">Measure</label><select id="axis"><option value="width">Width</option><option value="depth">Depth</option><option value="height">Height</option></select></div><button id="start-ruler" disabled>Set reference points</button></div>
+        <div id="ruler-status" class="instruction" role="status">Choose a photo to use the ruler. You can also enter dimensions directly.</div>
+        <div id="ruler-result" class="ruler-result" hidden><div><span class="small">Photo estimate</span><strong id="measured-value"></strong></div><button id="apply-measurement">Use this dimension</button><button id="reset-points" class="text-button">Start over</button></div>
+        <p class="note">Photo ruler uses a pixel-length ratio. It works only when both lengths are on the same plane, photographed straight on. It does not recover hidden depth or correct perspective. Use a side photo for depth.</p>
+      </section>
+      <section id="fit-panel" role="tabpanel" aria-labelledby="fit-tab" hidden>
+        <div class="fit-controls"><div><label for="space-width">Available width <span>cm</span></label><input id="space-width" type="number" min="1" max="10000" value="160" step="0.1"></div><div><label for="space-depth">Available depth <span>cm</span></label><input id="space-depth" type="number" min="1" max="10000" value="90" step="0.1"></div><div><label for="margin">Extra clearance per axis <span>cm</span></label><input id="margin" type="number" min="0" max="1000" value="5" step="0.1"></div></div>
+        <label class="check"><input id="rotate" type="checkbox"> Rotate furniture 90°</label>
+        <svg id="footprint" viewBox="0 0 700 430" role="img" aria-label="To-scale furniture footprint and available space"></svg>
+        <div id="fit-result" class="fit-result" aria-live="polite"></div><p class="note">Checks a rectangular footprint only. Extra clearance is your chosen allowance, not a sensor accuracy estimate. Doors, access, furniture movement, and height need separate checks.</p>
+      </section>
+    </section>
+    <aside class="details"><div class="section-label">DIMENSIONS</div><p class="small">Outer edges, including arms and overhangs.</p><div id="dimension-fields"></div><button id="confirm-tape" class="secondary full">Mark all as tape-measured</button><p class="note">Use this only after measuring all three dimensions with a tape.</p><div class="listing"><h2>Have a product listing?</h2><p class="small">Record the exact model or variant. This demo does not search or fetch listings.</p><label for="listing-url">Product URL</label><input type="url" id="listing-url" placeholder="https://…"><label class="check"><input id="listing-confirm" type="checkbox"> I checked the exact variant and its assembled dimensions.</label><button id="use-listing" class="secondary full">Mark current dimensions as listing-sourced</button><a id="open-listing" target="_blank" rel="noopener noreferrer" hidden>Open saved listing ↗</a></div><p class="note">Dimensions remain editable. Your export includes their sources.</p></aside>
+  </div>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+</main>
+<footer><span>Browser photo ruler + RoomPlan JSON import</span><span>No live LiDAR or automated product search connected.</span></footer>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
